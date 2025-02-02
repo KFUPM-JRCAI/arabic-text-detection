@@ -1,0 +1,16 @@
+tqdm~=4.66
+torch~=2.4
+pandas~=2.2
+pypdf2~=3.0
+seaborn~=0.13
+requests~=2.32
+datasets~=2.20
+jsonlines~=4.0
+flash-attn~=2.6
+xmltodict~=0.13
+matplotlib~=3.9
+pylatexenc==2.10
+accelerate~=0.33
+transformers~=4.43
+bitsandbytes~=0.43
+semanticscholar~=0.8
