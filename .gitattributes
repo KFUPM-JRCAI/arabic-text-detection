@@ -1,0 +1,2 @@
+arabic_datasets/arabic_filtered_papers.json filter=lfs diff=lfs merge=lfs -text
+*.ckpt filter=lfs diff=lfs merge=lfs -text
