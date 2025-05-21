@@ -1,8 +1,11 @@
+nltk~=3.9
 tqdm~=4.66
+rich~=14.0
 torch~=2.4
 pandas~=2.2
 pypdf2~=3.0
 seaborn~=0.13
+pyarabic~=0.6
 requests~=2.32
 datasets~=2.20
 jsonlines~=4.0
@@ -14,3 +17,4 @@ accelerate~=0.33
 transformers~=4.43
 bitsandbytes~=0.43
 semanticscholar~=0.8
+pytorch-lightning~=2.5
