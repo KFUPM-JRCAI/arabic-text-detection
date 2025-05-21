@@ -21,7 +21,7 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 from pytorch_lightning import LightningDataModule
 from tqdm.auto import tqdm
-from scripts.prepare_hf_dataset import get_hf_dataset
+
 from pyarabic import araby
 
 
@@ -237,8 +237,9 @@ class AraSumDataModule(LightningDataModule):
             else:
                 generated_article = item["generated_article"]
 
-            texts.append(original_article)
-            labels.append(0)  # 0 for human-written
+            if original_article.strip() not in texts:
+                texts.append(original_article.strip())
+                labels.append(0)  # 0 for human-written
 
             texts.append(generated_article)
             labels.append(1)  # 1 for AI-generated
