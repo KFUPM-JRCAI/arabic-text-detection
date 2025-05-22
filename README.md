@@ -248,7 +248,7 @@ This research is supported by:
 
 ## 👥 Authors
 
-- **Maged S. Al-Shaibani** - Lead Researcher
+- **Maged S. Al-Shaibani**
 - **Moataz Ahmed** - Corresponding Author (moataz.ahmed@kfupm.edu.sa)
 
 *SDAIA-KFUPM Joint Research Center for Artificial Intelligence*  
