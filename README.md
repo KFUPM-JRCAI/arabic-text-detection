@@ -1,5 +1,3 @@
-# arabic-text-detection
-
 # Detection of Machine-Generated Arabic Text in the Era of Large Language Models
 
 [![Paper](https://img.shields.io/badge/Paper-Coming%20Soon-red)](link-to-be-added)
