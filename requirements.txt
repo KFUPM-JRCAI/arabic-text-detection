@@ -16,5 +16,6 @@ pylatexenc==2.10
 accelerate~=0.33
 transformers~=4.43
 bitsandbytes~=0.43
+python-dotenv~=1.1
 semanticscholar~=0.8
 pytorch-lightning~=2.5
