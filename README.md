@@ -11,7 +11,7 @@ This repository contains the official implementation and datasets for the resear
 
 This work represents the **first comprehensive investigation and stylometric analysis** of Arabic machine-generated text detection across multiple llms and generation methods, addressing the critical challenge of distinguishing between human-written and AI-generated Arabic content across multiple domains and generation strategies.
 
-### 🎯 Key Contributions
+### 🎯 Contributions
 
 - **Multi-dimensional stylometric analysis** of human vs. machine-generated Arabic text
 - **Multi-prompt generation framework** across 4 LLMs (ALLaM, Jais, Llama 3.1, GPT-4)
