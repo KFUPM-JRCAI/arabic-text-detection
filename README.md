@@ -1,6 +1,6 @@
 # Detection of Machine-Generated Arabic Text in the Era of Large Language Models
 
-[![Paper](https://img.shields.io/badge/Paper-Coming%20Soon-red)](https://arxiv.org/abs/2505.23276)
+[![Paper](https://img.shields.io/badge/Paper-2505.23276-red)](https://arxiv.org/abs/2505.23276)
 [![Dataset](https://img.shields.io/badge/🤗%20Dataset-Abstracts-blue)](https://huggingface.co/datasets/MagedSaeed/arabic-generated-abstracts)
 [![Dataset](https://img.shields.io/badge/🤗%20Dataset-Social%20Media-green)](https://huggingface.co/datasets/MagedSaeed/arabic-generated-social-media-posts)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
