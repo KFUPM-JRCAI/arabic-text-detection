@@ -222,18 +222,18 @@ The code was written with practices that support self-explanatory purpuses. You 
 - **Source**: [Algerian Scientific Journals Platform](https://asjp.cerist.dz/)
 - **Size**: 8,388 samples across 3 generation methods
 - **Period**: 2010-2022 (pre-AI era)
-- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/MagedSaeed/arabic-generated-abstracts)
+- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/KFUPM-JRCAI/arabic-generated-abstracts)
 
 ### Social Media Posts
 - **Source**: BRAD (Book Reviews) + HARD (Hotel Reviews)
 - **Size**: 3,318 samples (polishing method)
-- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/MagedSaeed/arabic-generated-social-media-posts)
+- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/KFUPM-JRCAI/arabic-generated-social-media-posts)
 
 
 ## 🔗 Related Work
 
-- **Abstracts Data Collection code**: [arabic-dataset](https://github.com/MagedSaeed/arabs-dataset)
-- **LLMs corekit**: [LLMs-corekit](https://github.com/MagedSaeed/llms-corekit)
+- **Abstracts Data Collection code**: [arabic-dataset](https://github.com/KFUPM-JRCAI/arabs-dataset)
+- **LLMs corekit**: [LLMs-corekit](https://github.com/KFUPM-JRCAI/llms-corekit)
 
 ## 📚 Citation
 
