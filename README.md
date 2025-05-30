@@ -5,7 +5,7 @@
 [![Dataset](https://img.shields.io/badge/🤗%20Dataset-Social%20Media-green)](https://huggingface.co/datasets/MagedSaeed/arabic-generated-social-media-posts)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 
-This repository contains the official implementation and datasets for the research paper **"Detection of Machine-Generated Arabic Text in the Era of Large Language Models"** by Maged S. Al-Shaibani and Moataz Ahmed.
+This repository contains the official implementation and datasets for the research paper **"The Arabic AI Fingerprint: Stylometric Analysis and Detection of Large Language Models Text"** (https://arxiv.org/abs/2505.23276) by Maged S. Al-Shaibani and Moataz Ahmed.
 
 ## 📋 Overview
 
