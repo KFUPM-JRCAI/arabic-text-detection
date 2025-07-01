@@ -238,7 +238,12 @@ The code was written with practices that support self-explanatory purpuses. You 
 ## 📚 Citation
 
 ```bibtex
-coming soon
+@article{al2025arabic,
+  title={The Arabic AI Fingerprint: Stylometric Analysis and Detection of Large Language Models Text},
+  author={Al-Shaibani, Maged S and Ahmed, Moataz},
+  journal={arXiv preprint arXiv:2505.23276},
+  year={2025}
+}
 ```
 
 ## 🏢 Institutional Support
