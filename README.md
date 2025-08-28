@@ -1,11 +1,11 @@
 # Detection of Machine-Generated Arabic Text in the Era of Large Language Models
 
-[![Paper](https://img.shields.io/badge/Paper-Coming%20Soon-red)](link-to-be-added)
+[![Paper](https://img.shields.io/badge/Paper-2505.23276-red)](https://arxiv.org/abs/2505.23276)
 [![Dataset](https://img.shields.io/badge/🤗%20Dataset-Abstracts-blue)](https://huggingface.co/datasets/MagedSaeed/arabic-generated-abstracts)
 [![Dataset](https://img.shields.io/badge/🤗%20Dataset-Social%20Media-green)](https://huggingface.co/datasets/MagedSaeed/arabic-generated-social-media-posts)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 
-This repository contains the official implementation and datasets for the research paper **"Detection of Machine-Generated Arabic Text in the Era of Large Language Models"** by Maged S. Al-Shaibani and Moataz Ahmed.
+This repository contains the official implementation and datasets for the research paper **"The Arabic AI Fingerprint: Stylometric Analysis and Detection of Large Language Models Text"** (https://arxiv.org/abs/2505.23276) by Maged S. Al-Shaibani and Moataz Ahmed.
 
 ## 📋 Overview
 
@@ -222,23 +222,28 @@ The code was written with practices that support self-explanatory purpuses. You 
 - **Source**: [Algerian Scientific Journals Platform](https://asjp.cerist.dz/)
 - **Size**: 8,388 samples across 3 generation methods
 - **Period**: 2010-2022 (pre-AI era)
-- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/MagedSaeed/arabic-generated-abstracts)
+- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/KFUPM-JRCAI/arabic-generated-abstracts)
 
 ### Social Media Posts
 - **Source**: BRAD (Book Reviews) + HARD (Hotel Reviews)
 - **Size**: 3,318 samples (polishing method)
-- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/MagedSaeed/arabic-generated-social-media-posts)
+- **Available**: [🤗 HuggingFace Hub](https://huggingface.co/datasets/KFUPM-JRCAI/arabic-generated-social-media-posts)
 
 
 ## 🔗 Related Work
 
-- **Abstracts Data Collection code**: [arabic-dataset](https://github.com/MagedSaeed/arabs-dataset)
-- **LLMs corekit**: [LLMs-corekit](https://github.com/MagedSaeed/llms-corekit)
+- **Abstracts Data Collection code**: [arabic-dataset](https://github.com/KFUPM-JRCAI/arabs-dataset)
+- **LLMs corekit**: [LLMs-corekit](https://github.com/KFUPM-JRCAI/llms-corekit)
 
 ## 📚 Citation
 
 ```bibtex
-coming soon
+@article{al2025arabic,
+  title={The Arabic AI Fingerprint: Stylometric Analysis and Detection of Large Language Models Text},
+  author={Al-Shaibani, Maged S and Ahmed, Moataz},
+  journal={arXiv preprint arXiv:2505.23276},
+  year={2025}
+}
 ```
 
 ## 🏢 Institutional Support
