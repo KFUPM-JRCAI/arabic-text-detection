@@ -8,6 +8,7 @@ from pytorch_lightning import LightningModule
 from transformers import (
     BertForSequenceClassification,
     XLMRobertaForSequenceClassification,
+    XLMRobertaModel,
 )
 
 
@@ -190,7 +191,6 @@ class LitTransformerModel(BaseLitModel):
             optimizer=optimizer,
             factor=0.75,
             patience=1,
-            verbose=True,
         )
         return {
             "optimizer": optimizer,
@@ -309,7 +309,6 @@ class LitBertModel(BaseLitModel):
             optimizer=optimizer,
             factor=0.75,
             patience=1,
-            verbose=True,
         )
         return {
             "optimizer": optimizer,
@@ -334,12 +333,6 @@ class LitXLMRobertaModel(BaseLitModel):
             model_name,
             num_labels=num_labels,
         )
-        if self.num_labels == 2:
-            self.fc = nn.Linear(self.num_labels, 1)
-            self.activation = nn.Sigmoid()
-        else:
-            self.fc = nn.Linear(self.num_labels, self.num_labels)
-            self.activation = nn.Softmax(dim=1)
 
         # Initialize metrics based on the task type
         task = "binary" if num_labels == 2 else "multiclass"
@@ -365,20 +358,14 @@ class LitXLMRobertaModel(BaseLitModel):
 
     def forward(self, input_ids, attention_mask):
         outputs = self.xlm_roberta(input_ids, attention_mask=attention_mask)
-        outputs = self.fc(outputs.logits)
-        return self.activation(outputs)
+        return outputs.logits
 
     def step(self, batch, batch_idx, step_name):
         input_ids, attention_mask, labels = batch
         outputs = self(input_ids, attention_mask)
         outputs = outputs.squeeze(-1)
-
-        if self.num_labels == 2:
-            loss = F.binary_cross_entropy(outputs, labels.float())
-            predictions = (outputs > 0.5).float()
-        else:
-            loss = F.cross_entropy(outputs, labels.long())
-            predictions = torch.argmax(outputs, dim=1)
+        loss = F.cross_entropy(outputs, labels.long())
+        predictions = torch.argmax(outputs, dim=1)
 
         if step_name == "predict":
             return {"predictions": predictions, "labels": labels}
@@ -463,7 +450,164 @@ class LitXLMRobertaModel(BaseLitModel):
             optimizer=optimizer,
             factor=0.75,
             patience=1,
-            verbose=True,
+            # verbose=True,
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler,
+            "monitor": "val_loss",
+        }
+
+
+class LitXLMRobertaModelWithTextTransforms(BaseLitModel):
+    def __init__(
+        self,
+        learning_rate=1e-5,
+        num_labels=2,
+        model_name="xlm-roberta-base",  # Can be changed to "xlm-roberta-large" if needed
+    ):
+        super().__init__()
+        if num_labels < 2:
+            raise ValueError("Number of labels must be at least 2")
+        self.num_labels = num_labels
+
+        self.xlm_roberta = XLMRobertaModel.from_pretrained(model_name)
+
+        task = "binary" if num_labels == 2 else "multiclass"
+        num_classes = num_labels if task != "binary" else None
+
+        self.train_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
+        self.val_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
+        self.test_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
+
+        self.train_precision = torchmetrics.Precision(
+            task=task, num_classes=num_classes
+        )
+        self.val_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
+        self.test_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
+
+        self.train_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
+        self.val_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
+        self.test_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
+
+        self.train_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
+        self.val_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
+        self.test_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
+
+    def forward(self, input_ids, attention_mask):
+        text_input_ids = input_ids.pop("text")
+        text_attention_mask = attention_mask.pop("text")
+        other_transforms_input_ids = {v for k, v in input_ids.items() if k != "text"}
+        other_transforms_attention_mask = {v for k, v in attention_mask.items() if k != "text"}
+        # get the outputs
+        text_outputs = self.xlm_roberta(
+            text_input_ids,
+            attention_mask=text_attention_mask,
+        )
+        transforms_outputs = []
+        for transform_inputs_ids, transform_attention_mask in zip(
+            other_transforms_input_ids,
+            other_transforms_attention_mask,
+        ):
+            transforms_outputs.append(
+                self.xlm_roberta(
+                    transform_inputs_ids,
+                    attention_mask=transform_attention_mask,
+                )
+            )
+        fused_features = [text_outputs.logits]
+        for output in transforms_outputs:
+            fused_features.append(output.logits)
+        fused_features = sum(fused_features) / len(fused_features)
+        logits = self.fc(fused_features)
+        return logits
+
+    def step(self, batch, batch_idx, step_name):
+        input_ids, attention_mask, labels = batch
+        outputs = self(input_ids, attention_mask)
+        outputs = outputs.squeeze(-1)
+        loss = F.cross_entropy(outputs, labels.long())
+        predictions = torch.argmax(outputs, dim=1)
+        if step_name == "predict":
+            return {"predictions": predictions, "labels": labels}
+
+        # Calculate metrics
+        accuracy = getattr(self, f"{step_name}_accuracy")(predictions, labels)
+        precision = getattr(self, f"{step_name}_precision")(predictions, labels)
+        recall = getattr(self, f"{step_name}_recall")(predictions, labels)
+        f1 = getattr(self, f"{step_name}_f1")(predictions, labels)
+
+        # Store the results
+        step_results = {
+            "loss": loss,
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+        }
+
+        self.log(
+            f"{step_name}_loss",
+            loss,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True,
+        )
+        self.log(
+            f"{step_name}_acc",
+            accuracy,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True,
+        )
+        self.log(
+            f"{step_name}_precision",
+            precision,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True,
+        )
+        self.log(
+            f"{step_name}_recall",
+            recall,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True,
+        )
+        self.log(
+            f"{step_name}_f1",
+            f1,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True,
+        )
+
+        return step_results
+
+    def training_step(self, batch, batch_idx):
+        return self.step(batch, batch_idx, "train")
+
+    def validation_step(self, batch, batch_idx):
+        return self.step(batch, batch_idx, "val")
+
+    def test_step(self, batch, batch_idx, dataloader_idx=0):
+        return self.step(batch, batch_idx, "test")
+
+    def predict_step(self, batch, batch_idx):
+        return self.step(batch, batch_idx, "predict")
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.learning_rate)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer=optimizer,
+            factor=0.75,
+            patience=1,
+            # verbose=True,
         )
         return {
             "optimizer": optimizer,
