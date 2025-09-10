@@ -246,8 +246,7 @@ class AraSumDataModule(LightningDataModule):
 
         # Shuffle and split the data
         combined = list(zip(texts, labels))
-        random.seed(GLOBAL_SEED)
-        random.shuffle(combined)
+        random.Random(GLOBAL_SEED).shuffle(combined)
         texts, labels = zip(*combined)
 
         train_end = int(len(texts) * self.train_ratio)
@@ -410,8 +409,7 @@ class ArabicAbstractsDataModule(LightningDataModule):
         # perform shuffling
         # Convert to list of pairs, shuffle, and unzip
         pairs = list(zip(self.texts, self.labels))
-        random.seed(GLOBAL_SEED)
-        random.shuffle(pairs)
+        random.Random(GLOBAL_SEED).shuffle(pairs)
         self.texts, self.labels = zip(*pairs)
 
         # Convert back to lists if needed (zip creates tuples)
@@ -577,8 +575,7 @@ class ArabicSocialMediaDataModule(LightningDataModule):
         # perform shuffling
         # Convert to list of pairs, shuffle, and unzip
         pairs = list(zip(self.texts, self.labels))
-        random.seed(GLOBAL_SEED)
-        random.shuffle(pairs)
+        random.Random(GLOBAL_SEED).shuffle(pairs)
         self.texts, self.labels = zip(*pairs)
 
         # Convert back to lists if needed (zip creates tuples)
@@ -676,9 +673,8 @@ class DataModuleFromDataModules(LightningDataModule):
                 val_pairs.extend(list(zip(dm.val_dataset.texts, dm.val_dataset.labels)))
 
             # Shuffle the pairs using GLOBAL_SEED
-            random.seed(GLOBAL_SEED)
-            random.shuffle(train_pairs)
-            random.shuffle(val_pairs)
+            random.Random(GLOBAL_SEED).shuffle(train_pairs)
+            random.Random(GLOBAL_SEED).shuffle(val_pairs)
 
             # Unzip the pairs back into texts and labels
             train_texts, train_labels = zip(*train_pairs)
@@ -707,8 +703,7 @@ class DataModuleFromDataModules(LightningDataModule):
                 )
 
             # Shuffle test data
-            random.seed(GLOBAL_SEED)
-            random.shuffle(test_pairs)
+            random.Random(GLOBAL_SEED).shuffle(test_pairs)
 
             # Unzip the pairs
             test_texts, test_labels = zip(*test_pairs)
