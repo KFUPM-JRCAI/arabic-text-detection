@@ -28,22 +28,31 @@ from pyarabic import araby
 # Set a global seed
 GLOBAL_SEED = 42
 
-random.seed(GLOBAL_SEED)
-torch.manual_seed(GLOBAL_SEED)
-torch.cuda.manual_seed_all(GLOBAL_SEED)
-np.random.seed(GLOBAL_SEED)
+# random.seed(GLOBAL_SEED)
+# torch.manual_seed(GLOBAL_SEED)
+# torch.cuda.manual_seed_all(GLOBAL_SEED)
+# np.random.seed(GLOBAL_SEED)
 
 # Make CuDNN deterministic
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
+# torch.backends.cudnn.deterministic = True
+# torch.backends.cudnn.benchmark = False
 
 
 class TextDataset(Dataset):
-    def __init__(self, texts, labels, tokenizer, max_len):
+    def __init__(self, texts, labels, tokenizer, max_len, text_transforms=None):
         self.texts = texts
         self.labels = labels
         self.tokenizer = tokenizer
         self.max_len = max_len
+        self.text_transforms = text_transforms or {}
+        
+        # Validate text_transforms
+        if isinstance(self.text_transforms, list):
+            # Convert list to dict with default names
+            print('Using default names transform_0, transform_1, ..., since no names are provided for transforms.')
+            self.text_transforms = {f"transform_{i}": transform for i, transform in enumerate(self.text_transforms)}
+        elif not isinstance(self.text_transforms, dict):
+            raise ValueError("text_transforms must be a dict or list of callables")
 
     def __len__(self):
         return len(self.texts)
@@ -53,19 +62,62 @@ class TextDataset(Dataset):
 
     def collate_fn(self, batch):
         texts, labels = zip(*batch)
-        inputs = self.tokenizer(
+        
+        # Tokenize original texts
+        text_inputs = self._tokenize_texts(texts, "text")
+        
+        # Apply transformations and tokenize each
+        transform_inputs = {}
+        for transform_name, transform_func in self.text_transforms.items():
+            # Apply transformation to all texts in batch
+            # transformed_texts = [self._apply_transform(text, transform_func) for text in tqdm(texts, desc=f"Applying {transform_name} to the batch")]
+            transformed_texts = [self._apply_transform(text, transform_func) for text in texts]
+            # Tokenize transformed texts
+            transform_inputs[transform_name] = self._tokenize_texts(transformed_texts, transform_name)
+        
+        labels = torch.tensor(labels, dtype=torch.long)
+        
+        # Combine all inputs
+        if self.text_transforms:
+            # Return dict format for multiple inputs
+            input_ids = {"text": text_inputs["input_ids"]}
+            attention_mask = {"text": text_inputs["attention_mask"]}
+            
+            for transform_name, inputs in transform_inputs.items():
+                input_ids[transform_name] = inputs["input_ids"]
+                attention_mask[transform_name] = inputs["attention_mask"]
+                
+            return input_ids, attention_mask, labels
+        else:
+            # Return standard format for single input
+            return text_inputs["input_ids"], text_inputs["attention_mask"], labels
+
+    def _apply_transform(self, text, transform_func):
+        """Apply transformation function to text and handle different return types."""
+        try:
+            result = transform_func(text)
+            
+            # Handle different return types from transformation functions
+            if isinstance(result, list):
+                # Join list of tokens/tags with spaces
+                return " ".join(str(item) for item in result)
+            elif isinstance(result, str):
+                return result
+            else:
+                # Convert other types to string
+                return str(result)
+        except Exception as e:
+            raise RuntimeError(f"Transform failed for text '{text[:50]}...': {str(e)}") from e
+
+    def _tokenize_texts(self, texts, name_suffix=""):
+        """Tokenize a list of texts."""
+        return self.tokenizer(
             texts,
             padding=True,
             truncation=True,
             return_tensors="pt",
             max_length=self.max_len,
         )
-
-        input_ids = inputs["input_ids"]
-        attention_mask = inputs["attention_mask"]
-        labels = torch.tensor(labels, dtype=torch.long)
-        return input_ids, attention_mask, labels
-
 
 class ArabicAIDetectorDataModule(LightningDataModule):
     def __init__(
@@ -315,6 +367,7 @@ class ArabicAbstractsDataModule(LightningDataModule):
         generation_types=None,  # list
         multi_label: bool = False,
         balance_ai_with_human=False,
+        text_transforms=None,  # dict {name: callable} or list of callables
     ):
         super().__init__()
         self.generated_base_path = "generated_arabic_datasets"
@@ -324,6 +377,7 @@ class ArabicAbstractsDataModule(LightningDataModule):
         self.val_ratio = val_ratio
         self.multi_label = multi_label
         self.balance_ai_with_human = balance_ai_with_human
+        self.text_transforms = text_transforms
 
         # Set default values if None
         self.models = models if models is not None else self.AVAILABLE_MODELS
@@ -430,15 +484,21 @@ class ArabicAbstractsDataModule(LightningDataModule):
             self.labels[:train_end],
             self.tokenizer,
             self.max_len,
+            self.text_transforms,
         )
         self.val_dataset = TextDataset(
             self.texts[train_end:val_end],
             self.labels[train_end:val_end],
             self.tokenizer,
             self.max_len,
+            self.text_transforms,
         )
         self.test_dataset = TextDataset(
-            self.texts[val_end:], self.labels[val_end:], self.tokenizer, self.max_len
+            self.texts[val_end:], 
+            self.labels[val_end:], 
+            self.tokenizer, 
+            self.max_len,
+            self.text_transforms,
         )
 
     def train_dataloader(self):
@@ -452,7 +512,6 @@ class ArabicAbstractsDataModule(LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             self.val_dataset,
-            # shuffle=True,
             batch_size=self.batch_size,
             collate_fn=self.val_dataset.collate_fn,
         )
@@ -487,6 +546,7 @@ class ArabicSocialMediaDataModule(LightningDataModule):
         models=None,  # list
         generation_types=None,  # list
         multi_label: bool = False,
+        text_transforms=None,  # dict {name: callable} or list of callables
     ):
         super().__init__()
         self.generated_base_path = "generated_arabic_datasets"
@@ -495,6 +555,7 @@ class ArabicSocialMediaDataModule(LightningDataModule):
         self.train_ratio = train_ratio
         self.val_ratio = val_ratio
         self.multi_label = multi_label
+        self.text_transforms = text_transforms
 
         # Set default values if None
         self.models = models if models is not None else self.AVAILABLE_MODELS
@@ -596,15 +657,21 @@ class ArabicSocialMediaDataModule(LightningDataModule):
             self.labels[:train_end],
             self.tokenizer,
             self.max_len,
+            self.text_transforms,
         )
         self.val_dataset = TextDataset(
             self.texts[train_end:val_end],
             self.labels[train_end:val_end],
             self.tokenizer,
             self.max_len,
+            self.text_transforms,
         )
         self.test_dataset = TextDataset(
-            self.texts[val_end:], self.labels[val_end:], self.tokenizer, self.max_len
+            self.texts[val_end:], 
+            self.labels[val_end:], 
+            self.tokenizer, 
+            self.max_len,
+            self.text_transforms,
         )
 
     def train_dataloader(self):
@@ -618,7 +685,6 @@ class ArabicSocialMediaDataModule(LightningDataModule):
     def val_dataloader(self):
         return DataLoader(
             self.val_dataset,
-            # shuffle=True,
             batch_size=self.batch_size,
             collate_fn=self.val_dataset.collate_fn,
         )
