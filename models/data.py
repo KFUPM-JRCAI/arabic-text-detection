@@ -547,6 +547,7 @@ class ArabicSocialMediaDataModule(LightningDataModule):
         generation_types=None,  # list
         multi_label: bool = False,
         text_transforms=None,  # dict {name: callable} or list of callables
+        text_processors=None,  # callable or None - applies to text before tokenization
     ):
         super().__init__()
         self.generated_base_path = "generated_arabic_datasets"
@@ -556,6 +557,7 @@ class ArabicSocialMediaDataModule(LightningDataModule):
         self.val_ratio = val_ratio
         self.multi_label = multi_label
         self.text_transforms = text_transforms
+        self.text_processors = text_processors
 
         # Set default values if None
         self.models = models if models is not None else self.AVAILABLE_MODELS
@@ -616,14 +618,20 @@ class ArabicSocialMediaDataModule(LightningDataModule):
                             if item["original_post"] not in processed_originals:
                                 # if item["original_post"] == "":
                                 #     continue
-                                texts.append(item["original_post"])
+                                original_text = item["original_post"]
+                                if self.text_processors is not None:
+                                    original_text = self.text_processors(original_text)
+                                texts.append(original_text)
                                 labels.append(self._get_label("human"))
                                 processed_originals.add(item["original_post"])
 
                             # Add generated post
                             if item["generated_post"] == "":
                                 continue
-                            texts.append(item["generated_post"])
+                            generated_text = item["generated_post"]
+                            if self.text_processors is not None:
+                                generated_text = self.text_processors(generated_text)
+                            texts.append(generated_text)
                             labels.append(self._get_label(model))
                 except Exception as e:
                     print(f"Error loading {file_path}: {str(e)}")
@@ -677,8 +685,9 @@ class ArabicSocialMediaDataModule(LightningDataModule):
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
-            batch_size=self.batch_size,
             shuffle=True,
+            batch_size=self.batch_size,
+            # num_workers=max(os.cpu_count()//16,4),
             collate_fn=self.train_dataset.collate_fn,
         )
 
@@ -686,6 +695,7 @@ class ArabicSocialMediaDataModule(LightningDataModule):
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
+            # num_workers=max(os.cpu_count()//16,4),
             collate_fn=self.val_dataset.collate_fn,
         )
 
@@ -693,6 +703,7 @@ class ArabicSocialMediaDataModule(LightningDataModule):
         return DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
+            # num_workers=max(os.cpu_count()//16,4),
             collate_fn=self.test_dataset.collate_fn,
         )
 

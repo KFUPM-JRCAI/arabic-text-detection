@@ -471,7 +471,9 @@ class LitXLMRobertaModelWithTextTransforms(BaseLitModel):
             raise ValueError("Number of labels must be at least 2")
         self.num_labels = num_labels
 
+        # self.xlm_roberta = XLMRobertaForSequenceClassification.from_pretrained(model_name)
         self.xlm_roberta = XLMRobertaModel.from_pretrained(model_name)
+        self.cf = nn.Linear(self.xlm_roberta.config.hidden_size, num_labels)
 
         task = "binary" if num_labels == 2 else "multiclass"
         num_classes = num_labels if task != "binary" else None
@@ -481,7 +483,8 @@ class LitXLMRobertaModelWithTextTransforms(BaseLitModel):
         self.test_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
 
         self.train_precision = torchmetrics.Precision(
-            task=task, num_classes=num_classes
+            task=task,
+            num_classes=num_classes,
         )
         self.val_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
         self.test_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
@@ -498,7 +501,9 @@ class LitXLMRobertaModelWithTextTransforms(BaseLitModel):
         text_input_ids = input_ids.pop("text")
         text_attention_mask = attention_mask.pop("text")
         other_transforms_input_ids = {v for k, v in input_ids.items() if k != "text"}
-        other_transforms_attention_mask = {v for k, v in attention_mask.items() if k != "text"}
+        other_transforms_attention_mask = {
+            v for k, v in attention_mask.items() if k != "text"
+        }
         # get the outputs
         text_outputs = self.xlm_roberta(
             text_input_ids,
@@ -515,12 +520,12 @@ class LitXLMRobertaModelWithTextTransforms(BaseLitModel):
                     attention_mask=transform_attention_mask,
                 )
             )
-        fused_features = [text_outputs.logits]
+        fused_logits = text_outputs.pooler_output
         for output in transforms_outputs:
-            fused_features.append(output.logits)
-        fused_features = sum(fused_features) / len(fused_features)
-        logits = self.fc(fused_features)
-        return logits
+            fused_logits = fused_logits + output.pooler_output
+        fused_logits = fused_logits / (len(transforms_outputs) + 1)
+        final_logits = self.cf(fused_logits)
+        return final_logits
 
     def step(self, batch, batch_idx, step_name):
         input_ids, attention_mask, labels = batch
