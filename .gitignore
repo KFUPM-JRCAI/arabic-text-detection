@@ -171,3 +171,5 @@ cython_debug/
 .pypirc
 lightning_logs
 trained_detectors
+jrcai_corekit
+HF_LLMs

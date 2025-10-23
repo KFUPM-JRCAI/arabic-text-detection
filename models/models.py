@@ -337,24 +337,25 @@ class LitXLMRobertaModel(BaseLitModel):
         # Initialize metrics based on the task type
         task = "binary" if num_labels == 2 else "multiclass"
         num_classes = num_labels if task != "binary" else None
+        average = 'micro' if task == 'binary' else 'macro'
 
-        self.train_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
-        self.val_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
-        self.test_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
+        self.train_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes, average=average)
+        self.val_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes, average=average)
+        self.test_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes, average=average)
 
         self.train_precision = torchmetrics.Precision(
-            task=task, num_classes=num_classes
+            task=task, num_classes=num_classes, average=average
         )
-        self.val_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
-        self.test_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
+        self.val_precision = torchmetrics.Precision(task=task, num_classes=num_classes, average=average)
+        self.test_precision = torchmetrics.Precision(task=task, num_classes=num_classes, average=average)
 
-        self.train_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
-        self.val_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
-        self.test_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
+        self.train_recall = torchmetrics.Recall(task=task, num_classes=num_classes, average=average)
+        self.val_recall = torchmetrics.Recall(task=task, num_classes=num_classes, average=average)
+        self.test_recall = torchmetrics.Recall(task=task, num_classes=num_classes, average=average)
 
-        self.train_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
-        self.val_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
-        self.test_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
+        self.train_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes, average=average)
+        self.val_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes, average=average)
+        self.test_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes, average=average)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.xlm_roberta(input_ids, attention_mask=attention_mask)
@@ -477,25 +478,27 @@ class LitXLMRobertaModelWithTextTransforms(BaseLitModel):
 
         task = "binary" if num_labels == 2 else "multiclass"
         num_classes = num_labels if task != "binary" else None
+        average = 'micro' if task == 'binary' else 'macro'
 
-        self.train_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
-        self.val_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
-        self.test_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes)
+        self.train_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes,average=average)
+        self.val_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes,average=average)
+        self.test_accuracy = torchmetrics.Accuracy(task=task, num_classes=num_classes,average=average)
 
         self.train_precision = torchmetrics.Precision(
             task=task,
             num_classes=num_classes,
+            average='macro',
         )
-        self.val_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
-        self.test_precision = torchmetrics.Precision(task=task, num_classes=num_classes)
+        self.val_precision = torchmetrics.Precision(task=task, num_classes=num_classes, average=average)
+        self.test_precision = torchmetrics.Precision(task=task, num_classes=num_classes, average=average)
 
-        self.train_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
-        self.val_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
-        self.test_recall = torchmetrics.Recall(task=task, num_classes=num_classes)
+        self.train_recall = torchmetrics.Recall(task=task, num_classes=num_classes,average=average)
+        self.val_recall = torchmetrics.Recall(task=task, num_classes=num_classes,average=average)
+        self.test_recall = torchmetrics.Recall(task=task, num_classes=num_classes,average=average)
 
-        self.train_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
-        self.val_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
-        self.test_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes)
+        self.train_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes,average=average)
+        self.val_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes,average=average)
+        self.test_f1 = torchmetrics.F1Score(task=task, num_classes=num_classes,average=average)
 
     def forward(self, input_ids, attention_mask):
         text_input_ids = input_ids.pop("text")
