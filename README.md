@@ -237,6 +237,20 @@ The code was written with practices that support self-explanatory purpuses. You 
 
 ## 📚 Citation
 
+The __Expert Systems with Applications__ Journal paper:
+
+```bibtex
+@article{al2025arabic,
+  title={Arabic Machine-Generated Text Detection: Stylometric Analysis and Cross-Model Evaluation},
+  author={Al-Shaibani, Maged S and Ahmed, Moataz},
+  journal={Expert Systems with Applications},
+  pages={130644},
+  year={2025},
+  publisher={Elsevier}
+}
+```
+The preprint (arxiv):
+
 ```bibtex
 @article{al2025arabic,
   title={The Arabic AI Fingerprint: Stylometric Analysis and Detection of Large Language Models Text},
